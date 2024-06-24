@@ -1,0 +1,4 @@
+stats/
+*.log
+database.json
+coursework4.yaml

@@ -1,0 +1,419 @@
+Level,Problem,Attack,Defense
+"Password
+Files",Plain text,Impersonate a user in the system,
+,Encrypted passwords,"Obtain password file
+Obtain encryption key",
+,Hashes,"Offline dictionary attack 
+Build rainbow table 
+• Start from a vocabulary of common, memorable words
+• Apply password-mangling rules to generate realistic variants
+Look for a stolen hash in the dictionary
+John the Ripper",
+,Salted hashes,"Impractical to run a generic offline dictionary attack
+Offline dictionary attack against one specific user is still practical (given its salt)",
+Online authentication systems,"Usability 
+
+Memorable passwords","Online dictionary attack 
+Find username (email adress, surnames)
+Find previously used password from leaked databases 
+Submit username/password combinations","Service provider
+Limit numbers of tries per username or per IP
+
+Use CAPTCHAs
+
+Honeypot accounts
+
+Block request from hosts logging into this
+Hash with PBKDF2 or bcrypt
+
+Don’t ask user to change password often
+
+Don’t fail with “User not found”
+
+Introduce artificial delay and ask sec questions after a few failed attempts
+
+Block account
+
+Show info about last log in/sms/email
+
+Password managers 
+
+2FA
+
+Single Sign On"
+,,,"Alternatives
+Hardware tokens
+
+Biometric authentication
+
+RFID tags
+
+Passwordless authentication
+
+PIN sent via email
+
+Passkeys"
+LAN,"Mac adresses can be changed by host
+
+
+Network switches cache Port-MAC associations","MAC flooding/Switch poisoning
+Attacker forces switch to broadcast traffic, so he can sniff packets
+
+The attacker sends a large number of Ethernet frames to the switch, each containing a different source MAC address.
+
+These frames flood the switch's MAC address table, filling it up with fake or random MAC address entries
+
+It reaches its capacity limit and then instead of forwarding frames only to the appropriate port based on the destination MAC address, the switch forwards frames to all ports, effectively turning the network into a broadcast domain
+
+When A wants to send message to B, switch does not know the port that B was connected to anymore, as the cache is full of others, so
+the switch now broadcasts the message from A to all other
+Participants.
+
+Thus, Ataacker C gets to see messages sent from A to B.","“Port security”: limit ability to flood caches
+
+
+ Keep track of authorised MAC addresses in the system"
+,,"MAC spoofing
+
+Spoofs MAC of router
+
+Attacker uses MAC flooding to exclude router port from switch cache
+
+Attacker becomes MITM!",
+,"MAC address is easy to spoof 
+
+Attacker can change its own mac address to evade access control mechanisms that switches may implement at switch level
+
+Attacker can impersonate the router","ARP spoofing/ ARP cache poisoning
+
+When a device on a local network wants to communicate with another device (or router), it needs to know the MAC address associated with the target device's IP address. To find this information, the device sends an ARP request to the local network asking, ""Who has this IP address?""
+
+The ARP request is broadcast to all devices on the local network segment, including the switch.
+
+The attacker, who is also on the same LAN, intercepts the ARP request broadcast by the victim device.
+
+The attacker responds to the ARP request before the legitimate device can do so. It sends a false ARP reply, claiming to be the device with the requested IP address and providing their own MAC address.
+
+The switc is confused, forwards the ARP reply to the victim device,whichcaches the reply.","Static ARP rules 
+
+Spoofed ARP message detection if there are 2 replies kick off both hosts and notify the network administrator"
+IP,"Time to live (TTL) is used to discard packets that take too many steps to reach
+destination.","Traceroute 
+For information gathering 
+
+By sending packets with increasing TTL values, one can determine the number of hosts (routers) between the source and destination hosts. 
+
+ When a packet reaches its TTL limit and is discarded by a router or network device, an error message, typically an ICMP Time Exceeded message, is sent back to the source IP address. This error message contains information about the device that discarded the packet, including its IP address and sometimes additional metadata such as the interface through which the packet was discarded.","Firewalls and IDS devices may exhibit different TTL behavior compared to regular routers. For example, they might decrement the TTL by more than one for security reasons, to make it more challenging for attackers to trace the network topology."
+,The source IP is not authenticated and easy to spoof,"Idle scanning, DDos.. 
+Off-path attacker can send packets with target IP as source
+• The target will receive response","IPsec 
+
+Authentication Header (AH)
+– Authentication and integrity of whole packet
+– Allows packet inspection, not blocked by firewalls
+
+Encapsulating Security Payload (ESP) Confidentiality of payload but may be blocked by firewalls
+– Transport mode protects the IP payload only
+– Tunnel mode: protects also the IP header (used by VPNs) created a new datagram, old one is encrypted and needs authentication, uses ESP as protocol instead of TCP"
+,BGP routing is partly based on trust as one AS cannot keep track of all IP addresses,"BGP hijacking
+malicious AS can advertise false routes, divert traffic, and become MITM","(MANRS) Global initiative to secure BGP and reduce routing threa
+
+Resource Public Key Infrastructure (RPKI) 
+When an AS is looking for a route it will be presented with the normal BGP advertised routes but also with certificates; so a legitimate router for that subnet will be able to provide a certificate showing that it owns the group of addresses and the AS may reject hijacked routes"
+,,"DDos 
+
+use different IP adresses that can send requests directly to your target
+Flood a target with extremely high volume of network traffic
+take a service down, increase their cloud costs, degrade their
+perfrommance","IDS 
+
+If they have a global view of the network they can detect it"
+IP - IDS,"IP fragmentation 
+(lectur 9)","IDS evasion 
+1.Fragment a suspicious IP
+packet in 2
+2. Traceroute to determine
+distance to IDS and target
+3. Send frag 1 to reach target
+4. Send innocuous replacement
+of frag 2 so that it’s seen by
+the IDS but expires before
+reaching the target
+5. IDS decides that
+communication is safe
+6. Send malicious frag 2 so that
+it reaches the target
+7. IDS does not interpret
+message from (6) as related
+to the one in (3)",
+IP - DNS,DNS requests and responses are not authenticated (can be read and modified by attacker),"DNS MITM 
+lie about the real IP adresses
+
+Brute force password in the admin panel of a DNS server adn change ip address associated to server
+
+Hack the TLD server and change Namespace record; redirect queries for target servers coming fro victim IP but give honest answers to other queries
+
+Even ISPs insert ad page in NXDOMAIN responses when domain doesn’t exist
+
+
+Off path attacker 
+Spoof DHCP packet provide your IP as a DNS resolver when someone new joins the networks
+
+Spoof the reply of DNS query if you see one on the LAN, try to reply first before the whole DNS resolution process
+
+
+Compromise LAN router to use a DNS resolver controlled by the attacker 
+
+DNS Cache poisoning in one of the intermediary DNS resolvers, window of opportunity to affect anybody querying for that domain until TTL 
+
+DNS Rebinding  bypass defences at higher level security stack by leveraging properties of DNS","DNSSEC
+Uses public key cryptography to protect authenticity and integrity 
+But low adoptio rate (google resolvers use it)
+
+DNSSEC chain of trust follows DNS resolution path
+
+Trust starts at DNS root 
+Resolvers know public keys of root nodes
+Parent node uses private key to sign hashes of children’s public keys
+This lets resolvers check the authenticity of a node public key
+
+DNS resolution node signs zone data using its private key
+
+This lets resolvers check the authenticity of the DNS reply"
+,"DNSSEC zone enumeration 
+
+If a domain does not exist, an NSEC record reveals alphabetically-closest neighbors","this helps hacker’s intelligence gathering activities
+
+Find out which domains don’t exist (bob) and discover “closest” ones (alice, charlie) and find out two hosts that actually exist on that network",Salted hashes of domain names
+,DNS queries (and in particular to non-blacklisted domains) are not filtered,"DNS Tunelling 
+
+Send and receive information from a compromised host outside the network bypassing a firwall would normally be blocking
+TCP/HTTP requests but not DNS ones. The attacker registers attacker.com and sets a name server for it where there is this host listening for data. The compromised host
+sitting on the internal network will query for subdomain x123 which is not found by the internal DNS so it will send it out on the internet and not
+be blocked by the firewall as it hasn't been used for malicious purposes before. The server receives x123 as a message, encodes a message as a DNS packet and sends it back.
+The firewall sees a response for a request that was previously let through so doesn’t block it
+
+Textual data in the payload
+Codified as an IP address in an A record
+Codified as signature in a DNSSec record",
+,Malware uses DNS to contact C&C and exfiltration servers,"If you hardwire an IP inside your malware then once that host gets blocked for some reason you can no longer to receive communication
+
+If you use domain name you can replace host under it
+
+People can block domain names but there are DGAS that embed in malware a large pseudorandom random domain names so that one cannot go out and block them all.
+
+The malware knows that some of those will work. They decide afterwards which one they want to register.",
+Domain name registration,,"Malicious Domain name registration
+
+Cybersquatting Register trademarked terms in order to re-sell to legitimate brand owner for higher price
+
+Typosquatting Register names that are 1 or a few typos away from existing legitimate domains and rely on human mistake 
+
+Bitsquatting - same as typosquatting but relying on accidental bitflips in memory or wire instead of human error a-azon.co.uk
+
+Dropcatching - register newly expired domains to resell to owners or exploit trust",
+TCP,"TCP state easily accessible
+ 
+
+Sequence numbers are predictable: previous number + bytes exchanged","TCP session hijacking
+MITM attacker can read current sequence number and inject new packets","Time-delay, then discard
+race-condition packets 
+
+Protect TCP payload using TLS, HTTPS
+
+IDS uses signature or anomaly based detection to identify if there has been a blind spoofing attack attempt. By looking for specific patterns or by analysing the sequence trends. Can be evaded."
+,,"Blind spoofing attack
+
+Off-path attacker can try and guess the right sequence number",
+,,"Port scanning
+
+Normal tcp request to check if port is open and responds with syn/ack. If not open it responds with RST
+
+
+Idle scanning - to probe a target host indirectly through an idle host by using the IPID
+
+Port sweep  One attacker looks for a specific service on many machines
+
+Malicious traffic open a tcp/ip connection normally, play it by the rules but then send malicious data, exfiltrate ndata 
+
+Port knocking can be used by both attackers (to hide a backdoor) or by system admins
+To protect sensitive services
+1. Sequential or random scan only finds closed ports
+2. Client shares a secret with server that identifies specific ports to probe in a fixed order (3,1,2,4);
+server replies to last probe (4) with random port (n) where the service will be provided
+3. Client connect to service on the random port","IDS 
+
+Detect active information gathering: host/port/vuln scans, port sweeps
+And stop those requests or alert admin"
+HTTP,HTTP over TCP/IP,Eavesdropping or MITM,Use HTTPS
+,Cache Poisoning,"HTTP Proxy cache poisoning
+Rogue http responses sent downstream",\/
+,Response code abuse through header modification,"Response code abuse using rare response codes to evade the IDS
+
+Infected host requests dummy page on C2 (Command and control) server. Server replies with response code to execute commands.",\/
+,Response Splitting,Attacker confuses client to accept bogus response over keepalive,\/
+,SSL Stripping,"MITM attacker stops https upgrade 
+forms https connection to server themselves and sends http back to the victim.","HSTS - strict transport security.
+[issue hsts must be sent over https so browser must know to immediately connect on https] 
+DANE can associate HSTS to DNSSEC"
+,Referrer Header,"Information leak through the referrer header. 
+Attacker can see the query string or the link between A and B","Use Referrer-Policy header to control sending of referrer header.
+Put sensitive data in POST body rather than in GET query string"
+,DNS Spoofing,Attacker can abuse DNS records,"DNS over HTTPS (DoH) - centralisation concerns - easy to fingerprint
+DNSSEC"
+PHP,,,
+,,,
+Server Side Security,Path Traversal,Maniupulate input/url to access unauthorized files (URL Hacking),"Restrict web app server using www account - only access public files
+
+Sandboxing in virtual file system using “chroot jail”
+
+Access control restriction in server config or web app logic"
+,Remote File Inclusion,"Inclusion of remote files through parameter manipulation. Can execute files through url manipulation
+
+Dangerous:
+Php.ini : allow_url_fopen=1
+include()
+include_once()
+require()
+require_once()
+fopen()
+readfile()
+file_get_contents()","Configure PHP settings
+
+Use secure patterns for file inclusion - whitelist of expected pages"
+,Server-Side Request Forgery,"Manipulation of server requests to access unauthorised resources
+
+Data exfiltration: GET /?url=file:///etc/passwd HTTP/1.1
+Port Scanning: GET /?url=http://127.0.0.1:22 HTTP/1.1","Parameter validation
+
+Request whitelisting"
+,Untrusted Query Strings,"Direct object references – update.php?account=target_id&action=unsubscribe 
+
+function level access control -
+update.php?account=userid&action=upgrade_to_root","DON’T TRUST USER INPUT
+
+Deny operations by default only allow after authorization
+
+Bind parameters to user session
+
+
+HTTPS DOES NOT HELP HERE"
+,Command Injection,Execution of arbitrary code via user input,"Input validation - blacklists are fragile
+
+Whitelist inputs
+
+Static and Dynamic analysis, Taint Analysis"
+SQL,SQLI Countermeasure,Pros,Cons
+,"Input filtering
+
+Escape or remove risky characters preventing use as sql syntax",Easy to implement,"Hard to cover all inputs 
+Hard to escape correctly across multiple trust boundaries"
+,"Prepared Statements
+
+Pre-defined queries with placeholders for params","More robust
+Faster due to optimizations",Require more expertise to know how they work
+,"Stored Procedures
+
+Parameterised SQL Queries stored in the database - “API”-like behaviour","Separate from the application
+Encapsulated","Need to avoid injection on themselves
+Run with higher privileges"
+,"Static/Dynamic Code Analysis
+
+Specialised tools to analyse code. 
+
+Type systems: ensure query param is of expected type
+
+Taint Analysis: detect if untrusted input can reach db without sanitation",Verify code to make sure there is no route for SQLI,More manual work required. Could miss some edge cases.
+,"Limit DB use
+
+Anomaly detections",,Performance trade-off
+,"Web App Firewall
+
+Use ids for packet analysis.",Can automatically stop suspicious queries,"False positives
+More technically difficult to implement"
+,Careful Programming Framework,Fundamental improvements to code,"Some vulnerabilities inherited from framework itself
+Unnecessary functionality increasing size of trusted base
+User error when dealing with framework code"
+Javascript,Malicious Code Obfuscation,"Attacker can use obfuscation to hide malicious code using string manipulation, identifier mangling, encryption, etc",Deobfuscation tools
+XSS,,<script type=,
+,,<img src,
+,,<body onload=alert(document.cookie)></body>,
+Browser Security,Phishing,"Attacker sets up fake website to steal user data. 
+
+Websites hosted using domain tricks and similar names to legitimate sites. Reputation considerations are important. Phishing kits available but often send data to the maker too.","Prevent spreading of phishing links through spam - Block spam
+Safe-browsing (black)lists of phishing sites - warn user before proceeding
+Automated detection through ML"
+,ClickJacking,"Attacker overlays an inconspicuous website over a target website 
+
+when users think they are clicking one thing on the overlay they are actually clicking something on the target site.","X-Frame-Options Header:
+‘DENY’: prevent webpage to be displayed in an iframe
+
+‘SAMEORIGIN’: Allows iframing only by pages in the same origin
+
+‘ALLOW-FROM https://example.com’: limits iframing to pages from specified origin [less widely supported]
+
+Frame-Busting Javascript: Use following script if(self != top) top.location = self.location - to prevent framing"
+,Drive-by-Downloads,Install malware on target machine when they visit an attacker webpage,"Disable or sandbox plugins
+
+Use safe-browsing
+
+Employ IDS to detect suspicious javascript
+
+Harden browsers against exploits"
+,Content Sniffing,"Attacker can employ polyglots to bypass content detection and again access to the server. 
+
+Polyglot + Content sniffing can lead to bypassing the SOP","X-Content-Type-Options
+Set X-Content-Type-Options: nosniff
+
+Tell browser not to sniff content and trust the content type header to know how to run the resource"
+Same Origin Policy,DNS Rebinding,Evade SOP by associating the attacker DNS name to the targets IP Address,"DNS Pinning - bindings cannot be changed too quickly
+Prevent external DNS queries to resolve to internal addresses"
+Scripting Attacks,XSS,"DOM-Based XSS - Attacker controlled parameters - embedded on page 
+Reflexted XSS
+Stored XSS - store malicious code on database
+Self XSS - user injects malicious code on themselves thinking it is useful for them","XSS Filters
+Html special char()
+
+Suspicious of complicated regular expressions
+
+Audited whitelists
+
+Context dependent Sanitization 
+
+Templates and frameowkrs
+
+Browser Enforced Defences
+Block url param in body as script
+
+X-xss protection
+
+Attribute mode = block
+
+Attribute mode = report
+
+CSP?
+
+Statistical Anomaly Detection
+Side Effect Reversion
+Defensive Programming techniques"
+,Cross-Channel Scripting,"Attacker targets embedded devices, IoT through non-http channels to inject xss payload",
+,Other XSS,"Universal XSS - browser extension compromise
+Scriptless attacks - css,font,svg,html to do attack
+Resident XSS",
+,Script Source Snooping,Attacker reads and anlyses web app source code to find vulnerabilities,"Obfuscation
+Removing script node from DOM"
+,Prototype Poisoning,Attacker redefined or overwrites prototypes of core js components,"Type checks - typeof()
+Avoid using prototypes"
+,iframe XSS,Attacker deploys xss to an iframe - can control entire dom.,Use HTML5 Sandboxing to isolate iframe
+,,,Content Security Policy
+Browser Storage,"webstorage, Cookies, indexedDB","Resident XSS - Attacker injects xss script on input that will stored within the storage medium. 
+Attacker can execute this in the future","DO NOT TRUST BROWSER STORAGE
+Sanitise the stored values as would with inputs
+Periodically validate, refresh or delete browser storage."
+,Cookie theft,"Attacker can steal cookies in various ways - MITM,XSS","Set cookies to expire
+Cookie Attributes:
+Secure - cookies only sent over https
+
+HTTPOnly - doesnt allow javascript to access cookie - stops XSS cookie theft
+
+Same Site - mitigates cross origin"
